@@ -43,7 +43,19 @@ function getValueType(value) {
 }
 
 function getArrayElementType(array) {
-  return getValueType(array[0]);
+  const value = array[0];
+  let type = getValueType(value);
+    if (type === "array") {
+      if (value.length > 0) type = `${getArrayElementType(value)}[]`;
+    } else if (type === "object") {
+      const newTypeName = `TYPE${typeObjectList.length}`;
+      typeObjectList.push({
+        name: newTypeName,
+        object: value,
+      });
+      type = newTypeName;
+}
+  return type;
 }
 
 function parseObject(object) {
