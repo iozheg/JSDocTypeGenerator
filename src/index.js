@@ -2,8 +2,10 @@ import "./style.css";
 
 const inputTextArea = document.getElementById("input-textarea");
 const outputArea = document.getElementById("output-textarea");
+/** @type {{name: string, object: object}[]} */
+const typeObjectList = [];
 
-function toJSDoc(object) {
+function objectToJSDoc(object, typeName) {
   let outputString = "";
   const keys = Object.keys(object);
 
@@ -11,10 +13,15 @@ function toJSDoc(object) {
     outputString += ` * @property {${object[key]}} ${key}\n`;
   }
   
-  outputString = `/**\n * @typedef {object} type1\n${outputString} */`;
+  outputString = `/**\n * @typedef {object} ${typeName || 'type1'
+    }\n${outputString} */`;
   return outputString;
 }
 
+function toJSDoc(data, typeName) {
+  if (typeof data === "object") return objectToJSDoc(data, typeName);
+  return `/**\n * @typedef ${data} ${typeName || 'TYPE'}\n*/`;
+}
 /**
  *
  *
@@ -69,6 +76,13 @@ function parseObject(object) {
     let type = getValueType(value);
     if (type === "array") {
       if (value.length > 0) type = `${getArrayElementType(value)}[]`;
+    } else if (type === "object") {
+      const newTypeName = `TYPE${typeObjectList.length}`;
+      typeObjectList.push({
+        name: newTypeName,
+        object: value,
+      });
+      type = newTypeName;
     }
     output[key] = type;
   }
@@ -94,21 +108,46 @@ function parse() {
   const json = JSON.stringify(object);
   console.log(json);
 
-  let parsedObject;
+  outputArea.innerHTML = "";
+  let inputData;
   let result;
   try {
     if (!inputTextArea.value || inputTextArea.value.length === 0) {
       result = "Empty JSON!";
     } else {
-      parsedObject = JSON.parse(inputTextArea.value);
-      const output = parseObject(parsedObject);
-      result = toJSDoc(output);
+      inputData = JSON.parse(inputTextArea.value);
+      const output = getDataType(inputData);
+      result = toJSDoc(output, "TYPE");
     }
   } catch (e) {
     console.log(e);
     result = "Error in JSON!";
   }
-  outputArea.innerHTML =result;
+  parseAllObjects();
+  outputArea.innerHTML += `${result}\n`;
+}
+
+function parseAllObjects() {
+  while (true) {
+    const currentTypeObject = typeObjectList.pop();
+    if (!currentTypeObject) break;
+
+    const parsedObject = parseObject(currentTypeObject.object);
+    const result = toJSDoc(parsedObject, currentTypeObject.name);
+
+  outputArea.innerHTML += `${result}\n`;
+
+  }
+}
+
+function getDataType(data) {
+  let type = getValueType(data);
+  if (type === "array") {
+    if (data.length > 0) type = `${getArrayElementType(data)}[]`;
+  } else if (type === "object") {
+    type = parseObject(data);
+  }
+  return type;
 }
 
 function component() {
