@@ -1,6 +1,6 @@
 /** @type {{name: string, object: object}[]} */
 const typeObjectList = [];
-let lastTypeNumber = 0;
+let lastCommonTypeNumber = 0;
 
 function objectToJSDoc(object, typeName) {
   let outputString = "";
@@ -46,7 +46,8 @@ function getValueType(value) {
 }
 
 function addObjectForAnalisysStack(object, key) {
-  const newTypeName = key ? `${key}Type` : `TYPE${++lastTypeNumber}`;
+  if (Object.keys(object).length === 0) return "Object";
+  const newTypeName = key ? `${key}Type` : `TYPE${++lastCommonTypeNumber}`;
   typeObjectList.push({
     name: newTypeName,
     object: object,
@@ -57,7 +58,7 @@ function addObjectForAnalisysStack(object, key) {
 function parseComplexTypes(value, key) {
   let type = getValueType(value);
   if (type === "Array") {
-    if (value.length > 0) type = `${makeDeepArrayAnalisys(value, key)}[]`;
+    type = makeDeepArrayAnalisys(value, key);
   } else if (type === "Object") {
     type = addObjectForAnalisysStack(value, key);
   }
@@ -65,7 +66,10 @@ function parseComplexTypes(value, key) {
 }
 
 function makeDeepArrayAnalisys(array, key) {
-  return parseComplexTypes(array[0], key);
+  if (array.length > 0) {
+    return `${parseComplexTypes(array[0], key)}[]`;
+  }
+  return "Array";
 }
 
 function parseObject(object) {
@@ -98,7 +102,7 @@ function makeDeepObjectAnalisys() {
 function getDataType(data) {
   let type = getValueType(data);
   if (type === "Array") {
-    if (data.length > 0) type = `${makeDeepArrayAnalisys(data)}[]`;
+    type = makeDeepArrayAnalisys(data);
   } else if (type === "Object") {
     type = parseObject(data);
   }
