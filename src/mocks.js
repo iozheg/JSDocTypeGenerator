@@ -3,43 +3,59 @@ const objComplex = {
   number: 35,
   boolean: false,
   null: null,
+  emptyArray: [],
   numberArray: [0,1,2,3],
+  emptyObjectArray: [{}],
   objectArray: [{
     prop1: "prop1",
     prop2: 4,
     prop3: { a: "a"}
   }],
-  emptyArray: [],
   address: {
     city: "mntview",
     street: "earth",
     number: 4,
     status: {
       good: true
-    }
+    },
+    residents: ["Max", "Alex"]
+  },
+  complexObject: {
+    cmpxObjArray: [{
+      innerArray: [4]
+    }]
   }
 };
 
 const objComplexJSdoc = `/**
- * @typedef {Object} addressType
- * @property {String} city
- * @property {String} street
- * @property {Number} number
- * @property {statusType} status
+ * @typedef {Object} CMPXOBJARRAY_TYPE
+ * @property {Number[]} innerArray
  */
 /**
- * @typedef {Object} statusType
+ * @typedef {Object} COMPLEXOBJECT_TYPE
+ * @property {CMPXOBJARRAY_TYPE[]} cmpxObjArray
+ */
+/**
+ * @typedef {Object} STATUS_TYPE
  * @property {Boolean} good
  */
 /**
- * @typedef {Object} objectArrayType
- * @property {String} prop1
- * @property {Number} prop2
- * @property {prop3Type} prop3
+ * @typedef {Object} ADDRESS_TYPE
+ * @property {String} city
+ * @property {String} street
+ * @property {Number} number
+ * @property {STATUS_TYPE} status
+ * @property {String[]} residents
  */
 /**
- * @typedef {Object} prop3Type
+ * @typedef {Object} PROP3_TYPE
  * @property {String} a
+ */
+/**
+ * @typedef {Object} OBJECTARRAY_TYPE
+ * @property {String} prop1
+ * @property {Number} prop2
+ * @property {PROP3_TYPE} prop3
  */
 /**
  * @typedef {Object} TYPE
@@ -47,10 +63,12 @@ const objComplexJSdoc = `/**
  * @property {Number} number
  * @property {Boolean} boolean
  * @property {Null} null
- * @property {Number[]} numberArray
- * @property {objectArrayType[]} objectArray
  * @property {Array} emptyArray
- * @property {addressType} address
+ * @property {Number[]} numberArray
+ * @property {Object[]} emptyObjectArray
+ * @property {OBJECTARRAY_TYPE[]} objectArray
+ * @property {ADDRESS_TYPE} address
+ * @property {COMPLEXOBJECT_TYPE} complexObject
  */`;
 
  const objPrimitives = {
@@ -60,7 +78,7 @@ const objComplexJSdoc = `/**
    null: null
  }
 
- const objPrimitivesJSdoc = `/**
+const objPrimitivesJSdoc = `/**
  * @typedef {Object} TYPE
  * @property {String} string
  * @property {Number} number
@@ -68,20 +86,27 @@ const objComplexJSdoc = `/**
  * @property {Null} null
  */`;
 
- const objList = [{
+const objList = [{
   number: 4
- }];
+}];
 
- const objListResult = `/**
- * @typedef {Object} TYPE1
+const objListResult = `/**
+ * @typedef {Object[]} TYPE
  * @property {Number} number
- */
-/**
- * @typedef {TYPE1[]} TYPE
  */`;
 
- export {
-   objComplex, objComplexJSdoc,
-   objPrimitives, objPrimitivesJSdoc,
-   objList, objListResult
-  };
+const complexArray = [[{
+  prop: "string"
+}]];
+
+const complexArrayResult = `/**
+ * @typedef {Object[][]} TYPE
+ * @property {String} prop
+ */`;
+
+export {
+  objComplex, objComplexJSdoc,
+  objPrimitives, objPrimitivesJSdoc,
+  objList, objListResult,
+  complexArray, complexArrayResult
+};

@@ -2,10 +2,11 @@ import json2jsdoc from "./json2JSDocParser";
 import {
   objComplex, objComplexJSdoc,
   objPrimitives, objPrimitivesJSdoc,
-  objList, objListResult
+  objList, objListResult,
+  complexArray, complexArrayResult
 } from "./mocks";
 
-const template = type => `/**\n * @typedef {${type}} TYPE\n */`;
+const template = type => `/** @typedef {${type}} TYPE */`;
 
 test("should parse primitive types", () => {
   expect(json2jsdoc("string")).toBe(template("String"));
@@ -24,6 +25,25 @@ describe("should parse array", () => {
     expect(json2jsdoc([4])).toBe(template("Number[]"));
     expect(json2jsdoc([true])).toBe(template("Boolean[]"));
     expect(json2jsdoc([null])).toBe(template("Null[]"));
+  });
+
+  test("array of empty arrays", () => {
+    expect(json2jsdoc([[]])).toBe(template("Array[]"));
+  });
+
+  test("array of arrays with primitives", () => {
+    expect(json2jsdoc([["s"]])).toBe(template("String[][]"));
+    expect(json2jsdoc([[4]])).toBe(template("Number[][]"));
+    expect(json2jsdoc([[true]])).toBe(template("Boolean[][]"));
+    expect(json2jsdoc([[null]])).toBe(template("Null[][]"));
+  });
+
+  test("array of arrays with empty object", () => {
+    expect(json2jsdoc([[{}]])).toBe(template("Object[][]"));
+  });
+
+  test("array of arrays with non-empty object", () => {
+    expect(json2jsdoc(complexArray)).toBe(complexArrayResult);
   });
   
   test("array with empty object without creating new type", () => {
