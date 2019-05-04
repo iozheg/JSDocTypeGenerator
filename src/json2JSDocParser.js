@@ -1,31 +1,106 @@
-/** @type {{name: string, object: object}[]} */
-const typeObjectList = [];
-/** @type {{name: string, jsdoc: string, children: array}} */
-const treeOfTypes = {};
-let lastCommonTypeNumber = 0;
-
-function objectToJSDoc(object, typeName) {
-  let outputString = "";
-  const keys = Object.keys(object);
-
-  for (const key of keys) {
-    outputString += ` * @property {${object[key]}} ${key}\n`;
-  }
-  
-  outputString = `/**\n * @typedef {Object} ${typeName || 'TYPE'
-    }\n${outputString} */`;
-  return outputString;
-}
-
-function toJSDoc(data, typeName) {
-  if (typeof data === "object") return objectToJSDoc(data, typeName);
-  return `/**\n * @typedef {${data}} ${typeName || 'TYPE'}\n */`;
-}
 /**
+ * @typedef {Object} TYPEOBJECT
+ * @property {String} name
+ * @property {String} type
+ * @property {TYPEOBJECT[]} children
+ * @property {Boolean} isArray
+ */
+
+/**
+ * Returns new JSDoc type if property has children.
  *
+ * @param {TYPEOBJECT} property
+ * @returns {String} JSDoc string.
+ */
+function getPropertyNewType(property) {
+  if (property.children.length > 0) {
+    return typeObjectToJSDoc(property);
+  }
+}
+
+/**
+ * Creates JSDoc 'property' string.
  *
- * @param {undefined} value
- * @returns
+ * @param {TYPEOBJECT} property
+ * @returns JSDoc string.
+ */
+function createJsdocProperty(property) {
+  return ` * @property {${property.type}} ${property.name}\n`;
+}
+
+/**
+ * Creates JSDoc 'typedef' string for JS object.
+ *
+ * @param {String} type
+ * @returns JSDoc string.
+ */
+function createJsdocObjectTypedef(type) {
+  const modifiedType = type.replace(/\[\]$/, "") || 'TYPE';
+  return ` * @typedef {Object} ${modifiedType}\n`;
+}
+
+/**
+ * Creates JSDoc 'typedef' string for array. Used only if tree root element
+ * is array.
+ *
+ * @param {String} type
+ * @param {String} name
+ * @returns JSDoc string.
+ */
+function createJsdocArrayTypedef(type, name) {
+  const modifiedType = type.replace(/TYPE/, "Object") || 'TYPE';
+  return ` * @typedef {${modifiedType}} ${name}\n`;
+}
+
+/**
+ * Returns JSDoc string for tree branch.
+ *
+ * @param {TYPEOBJECT} typeObject
+ * @param {boolean} [rootIsArray=false]
+ * @returns {String} JSDoc string.
+ */
+function typeObjectToJSDoc(typeObject, rootIsArray = false) {
+  let outputStrings = [];
+  let newTypes = [];
+  for (const property of typeObject.children) {
+    const newType = getPropertyNewType(property);
+    if (newType) newTypes.unshift(newType);
+    outputStrings.push(createJsdocProperty(property));
+  }
+
+  return `${newTypes.join("")}/**\n${
+    rootIsArray
+    ? createJsdocArrayTypedef(typeObject.type, typeObject.name)
+    : createJsdocObjectTypedef(typeObject.type)
+  }${outputStrings.join("")} */\n`;
+}
+
+/**
+ * Starts tree traversal to build JSDoc string.
+ * tree.children[0] - tree root
+ * Depending on root element type uses different approaches for primitive
+ * types, JS objects and arrays.
+ * If root hasn't children than it has primitive type.
+ *
+ * @param {TYPEOBJECT} tree
+ * @returns {String} whole JSDoc string.
+ */
+function treeToJsdoc(tree) {
+  let output = "";
+  if (tree.children[0].children.length > 0) {
+    output += typeObjectToJSDoc(tree.children[0], tree.children[0].isArray);
+  } else {
+    output += `/** @typedef {${tree.children[0].type}} ${
+      tree.children[0].name} */`;
+  }
+  return output;
+}
+
+/**
+ * Returns value's type.
+ *
+ * @param {*} value
+ * @returns value's type.
  */
 function getValueType(value) {
   switch (typeof value) {
@@ -47,183 +122,90 @@ function getValueType(value) {
   }
 }
 
-function addObjectForAnalisysStack(object, key) {
-  if (Object.keys(object).length === 0) return "Object";
-  const newTypeName = key ? `${key.toUpperCase()}_TYPE` : `TYPE_${++lastCommonTypeNumber}`;
-  typeObjectList.push({
-    name: newTypeName,
-    object: object,
-  });
-  return newTypeName;
-}
-
-function parseComplexTypes(value, key) {
-  let type = getValueType(value);
-  if (type === "Array") {
-    type = makeDeepArrayAnalisys(value, key);
-  } else if (type === "Object") {
-    type = addObjectForAnalisysStack(value, key);
-  }
-  return type;
-}
-
-function makeDeepArrayAnalisys(array, key) {
+/**
+ * Parses array. Array don't become new type itself. Instead used it's
+ * first element to determine array type if it exists.
+ *
+ * @param {Array} array
+ * @param {String} name
+ * @returns {TYPEOBJECT}
+ */
+function parseArray(array, name) {
   if (array.length > 0) {
-    return `${parseComplexTypes(array[0], key)}[]`;
+    const result = parseData(array[0], name);
+    result.type += "[]";
+    result.isArray = true;
+    return result;
   }
-  return "Array";
+  return {
+    name: name,
+    type: "Array",
+    children: [],
+    isArray: true
+  };
 }
 
-function parseObject(object) {
-  const output = {};
+/**
+ * Returns tree node with type object. Parses object's children.
+ *
+ * @param {*} object
+ * @param {String} name
+ * @returns {TYPEOBJECT}
+ */
+function parseObject(object, name) {
+  const node = {
+    name: name,
+    type: "Object",
+    children: [],
+    isArray: false,
+  }
 
   const keys = Object.keys(object);
   for (const key of keys) {
-    const value = object[key];
-
-    output[key] = parseComplexTypes(value, key);
+    node.children.push(parseData(object[key], key));
+  }
+  
+  if (node.children.length > 0) {
+    node.type = (node.name && node.name !== "TYPE")
+      ? `${node.name.toUpperCase()}_TYPE` : "TYPE";
   }
 
-  return output;
+  return node;
 }
-
-function makeDeepObjectAnalisys() {
-  let outputJSDoc = "";
-  while (true) {
-    const currentTypeObject = typeObjectList.pop();
-    if (!currentTypeObject) break;
-
-    const parsedObject = parseObject(currentTypeObject.object);
-    const result = toJSDoc(parsedObject, currentTypeObject.name);
-
-    outputJSDoc += `${result}\n`;
-  }
-  return outputJSDoc;
-}
-
-function getDataType(data) {
+/**
+ * Determines data type.
+ * Parses complex types. Creates tree of types.
+ *
+ * @param {*} data
+ * @param {String} name
+ * @returns {TYPEOBJECT}
+ */
+function parseData(data, name) {
   let type = getValueType(data);
-  if (type === "Array") {
-    type = makeDeepArrayAnalisys(data);
-  } else if (type === "Object") {
-    type = parseObject(data);
-  }
-  return type;
-}
-
-
-
-
-
-function propertyToJsdoc(property) {
-  const result = {};
-  if (property.children.length > 0) {
-    result.newType = objectToJSDoc1(property);
-  }
-  result.property = ` * @property {${property.type}} ${property.name}\n`;
-  return result;
-}
-
-function objectToJSDoc1(object) {
-  let outputStrings = [];
-  let newTypes = [];
-  for (const property of object.children) {
-    const result = propertyToJsdoc(property);
-    if (result.newType) newTypes.push(result.newType);
-    outputStrings.push(result.property);
-  }
-
-  const type = object.type.replace(/\[\]$/, "") || 'TYPE';
-  return `${newTypes.join("")}/**\n * @typedef {Object} ${type}\n${
-    outputStrings.join("")} */\n`;
-}
-
-function arrayToJsdoc(object) {
-  let outputStrings = [];
-  let newTypes = [];
-  for (const property of object.children) {
-    const result = propertyToJsdoc(property);
-    if (result.newType) newTypes.push(result.newType);
-    outputStrings.push(result.property);
-  }
-
-  const type = object.type.replace(/\[\]$/, "") || 'TYPE';
-  return `${newTypes.join("")}/**\n * @typedef {Object[]} ${type}\n${
-    outputStrings.join("")} */\n`;
-}
-
-function treeToJsdoc(tree) {
-  let output = "";
-  if (tree.children[0].children.length > 0) {
-    if (tree.children[0].isArray) {
-      output += arrayToJsdoc(tree.children[0]);
-    } else {
-      output += objectToJSDoc1(tree.children[0]);
-    }
-  } else {
-    output += `/** @typedef {${tree.children[0].type}} ${tree.children[0].name} */`;
-  }
-  return output;
-}
-
-function parseData(data, name, parent) {
-  let type = getValueType(data);
-  const newNode = {
+  let newNode = {
     name: name || "TYPE",
     type: type,
     children: [],
     isArray: false,
   };
-  // parent.children.push(newNode);
+
   if (type === "Array") {
-    const result = parseArray(data, name, newNode);
-    newNode.type = result.type;
-    // newNode.name = result.name;
-    newNode.children = result.children;
-    newNode.isArray = true;
+    newNode = parseArray(data, newNode.name);
   } else if (type === "Object") {
-    parseObject1(data, newNode);
-    if (newNode.children.length > 0) {
-      type = name ? `${name.toUpperCase()}_TYPE` : "TYPE";
-    } else {
-      type = "Object";
-    }
-    newNode.type = type;
+    newNode = parseObject(data, newNode.name);
   }
 
   return newNode;
 }
 
-function parseArray(array, name, parent) {
-  if (array.length > 0) {
-    const result = parseData(array[0], name, parent);
-    result.type += "[]";
-    return result;
-  }
-  return {
-    type: "Array",
-    children: []
-  };
-}
-
-function parseObject1(object, parent) {
-  const keys = Object.keys(object);
-  for (const key of keys) {
-    const value = object[key];
-
-    parent.children.push(parseData(value, key, parent));
-  }
-}
-
 export default function json2jsdoc(inputData) {
-  treeOfTypes.name = "root";
-  treeOfTypes.type = null;
-  treeOfTypes.children = [];
-  treeOfTypes.children.push(parseData(inputData, undefined, treeOfTypes));
-  console.log(treeOfTypes);
+  /** @type {{name: string, type: string, children: array}} */
+  const treeOfTypes = {
+    name: "root",
+    type: null,
+    children: []
+  }
+  treeOfTypes.children.push(parseData(inputData));
   const result = treeToJsdoc(treeOfTypes);
-  console.log(result);
-  // const output = getDataType(inputData);
-  // const result = toJSDoc(output, "TYPE");
   return result.trim();
 }
