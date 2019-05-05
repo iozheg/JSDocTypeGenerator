@@ -1,7 +1,9 @@
 import hljs from 'highlight.js/lib/highlight';
 import json from 'highlight.js/lib/languages/json';
 import 'highlight.js/styles/github.css';
+
 import json2jsdoc from "./json2JSDocParser";
+import { objComplex } from "./mocks";
 import "./style.css";
 
 
@@ -12,9 +14,10 @@ const inputTextArea = document.getElementById("input-textarea");
 const outputArea = document.getElementById("output-textarea");
 
 function highlightJsdoc(jsdocString) {
-  return jsdocString
+  const formattedString = jsdocString
     .replace(/(@[\S]+)/g, "<span class='jsdoc-tag'>$1</span>")
     .replace(/({[\S]+})/g, "<span class='jsdoc-type'>$1</span>");
+  return `<pre>${formattedString}</pre>`;
 }
 
 /**
@@ -25,14 +28,14 @@ function highlightJsdoc(jsdocString) {
  * After this call highlight.js to highlight syntax.
  */
 function formatInputText(event) {
-  if (event.inputType !== "insertFromPaste") return;
+  if (event && event.inputType !== "insertFromPaste") return;
 
   let inputText = this.innerText;
   try {
     inputText = JSON.stringify(JSON.parse(inputText), null, 2);
   } catch (e) {}
 
-  this.innerHTML = "<pre>" + inputText + "</pre>";
+  this.innerHTML = `<pre>${inputText}</pre>`;
   hljs.highlightBlock(inputTextArea);
 }
 
@@ -66,9 +69,43 @@ function parseJson() {
     return result;
   }
 }
+
+function CopyToClipboard(containerid) {
+  if (document.selection) { 
+    const range = document.body.createTextRange();
+    range.moveToElementText(document.getElementById(containerid));
+    range.select().createTextRange();
+    document.execCommand("copy"); 
+    range
+  } else if (window.getSelection) {
+    const range = document.createRange();
+    range.selectNode(document.getElementById(containerid));
+    window.getSelection().addRange(range);
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges();
+  }
+}
+
 function component() {
-  const button = document.getElementById("parse-button");
-  button.onclick = parseJson;
+  const parseButton = document.getElementById("parse-button");
+  parseButton.onclick = parseJson;
+
+  const clearButton = document.getElementById("clear-button");
+  clearButton.onclick = () => {
+    inputTextArea.innerText = "";
+    outputArea.innerHTML = "";
+  };
+
+  const sampleButton = document.getElementById("sample-button");
+  sampleButton.onclick = () => {
+    inputTextArea.innerText = JSON.stringify(objComplex);
+    formatInputText.call(inputTextArea);
+  }
+
+  const clipboardButton = document.getElementById("clipboard-button");
+  clipboardButton.onclick = () => {
+    CopyToClipboard(outputArea.id);
+  }
 
   inputTextArea.addEventListener("input", formatInputText);
   hljs.highlightBlock(inputTextArea);

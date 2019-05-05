@@ -1,17 +1,27 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8">
   </head>
   <body>
     <div class="container">
-      <div id="input-textarea-div" class="textarea-container">
+      <h1 class="left-title">Insert JSON here</h1>
+      <h1 class="right-title ">Get JSDoc here</h1>
+      <div class="textarea-container left">
           <div id="input-textarea" class="json" contenteditable="true">
           </div>
       </div>
-      <div id="output-textarea-div" class="textarea-container">
-        <pre><code id="output-textarea" class="nohighlight"></code></pre>
+      <div class="textarea-container right">
+        <div id="output-textarea"></div>
+      </div>
+      <div class="left-control">
+        <button id="clear-button" class="button">Clear!</button>
+        <button id="sample-button" class="button">Insert sample</button>
+        <button id="parse-button" class="button main-button">Parse!</button>
+      </div>
+      <div class="right-control">
+        <button id="clipboard-button" class="button">Copy to clipboard</button>
       </div>
     </div>
-    <button id="parse-button">Parse!</button>
   </body>
 </html>

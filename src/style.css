@@ -2,21 +2,82 @@
   box-sizing: border-box;
 }
 .container {
-  display: flex;
-  min-height: 150px;
+  display: grid;
+  grid-template-columns: [left] 1fr [right] 1fr;
+  grid-template-areas:
+    "left-title right-title"
+    "left right"
+    "left-control right-control";
+  grid-column-gap: 5px;
+  width: 100%;
   padding: 5px;
 }
 .textarea-container {
-  flex-grow: 1;
+  height: 450px;
+  overflow: auto;
+  margin: 5px 3px;
+  border: 1px solid lightgray;
+  border-radius: 5px;
 }
-.textarea-container textarea {
-  width: 100%;
+.left-title {
+  grid-area: left-title;
+}
+.right-title {
+  grid-area: right-title;
+}
+.left {
+  grid-area: left;
+}
+.right {
+  grid-area: right;
+}
+.left-control {
+  grid-area: left-control;
+  justify-self: end;
+}
+.right-control {
+  grid-area: right-control;
+  justify-self: end;
+}
+#input-textarea {
   height: 100%;
 }
+#output-textarea {
+  padding: 0.5rem;
+}
+
+
 #parse-button {
-  height: 30px;
-  width: 60px;
-  border: 1px solid gray;
+  background-color: #286090;
+  color: white;
+}
+#clipboard-button {
+  background-color: #5cb85c;
+  color: white;
+}
+.button {
+  height: 40px;
+  min-width: 80px;
+  border: 1px solid lightgray;
+  border-radius: 3px;
   margin: 0 5px;
-  align-self: center;
+  /* align-self: center; */
+  background-color: white;
+  font-size: 16px;
+}
+.button:hover {
+  cursor: pointer;
+  background-color: #e6e6e6;
+}
+.button:active {
+  background-color: #d4d4d4;
+}
+
+
+/* JSDoc highlighting. */
+.jsdoc-tag {
+  color: rgb(42, 42, 202);
+}
+.jsdoc-type {
+  color: rgb(33, 156, 115);
 }
