@@ -1,36 +1,63 @@
 * {
   box-sizing: border-box;
+  margin: 0;
 }
+html, body {
+  height: 100%;
+}
+
 .container {
   display: grid;
   grid-template-columns: [left] 1fr [right] 1fr;
+  grid-template-rows: 85px 40px 450px 40px auto;
   grid-template-areas:
+    "header header"
     "left-title right-title"
     "left right"
-    "left-control right-control";
-  grid-column-gap: 5px;
+    "left-control right-control"
+    "bottom bottom";
+  grid-gap: 5px;
   width: 100%;
+  height: 100%;
   padding: 5px;
 }
 .textarea-container {
   height: 450px;
   overflow: auto;
-  margin: 5px 3px;
+  padding: 5px 3px;
   border: 1px solid lightgray;
   border-radius: 5px;
 }
+
+.header {
+  grid-area: header;
+  height: 60px;
+  background-color: #286090;
+  color: white;
+  text-align: center;
+  padding-top: 10px;
+  margin-bottom: 25px;
+}
+
 .left-title {
   grid-area: left-title;
 }
 .right-title {
   grid-area: right-title;
 }
+.title {
+  align-self: flex-end;
+  font-size: 32px;
+  text-align: center;
+}
+
 .left {
   grid-area: left;
 }
 .right {
   grid-area: right;
 }
+
 .left-control {
   grid-area: left-control;
   justify-self: end;
@@ -44,6 +71,14 @@
 }
 #output-textarea {
   padding: 0.5rem;
+  color: #277f31;
+}
+
+.bottom {
+  grid-area: bottom;
+  align-self: end;
+  justify-self: center;
+  padding: 10px 0 20px 0;
 }
 
 
@@ -76,8 +111,11 @@
 
 /* JSDoc highlighting. */
 .jsdoc-tag {
-  color: rgb(42, 42, 202);
+  color: #1720fa;
 }
 .jsdoc-type {
-  color: rgb(33, 156, 115);
+  color: #3086b6;
 }
+/* .jsdoc-prop-name {
+  color: #00187c;
+} */

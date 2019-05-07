@@ -2,11 +2,13 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
   </head>
   <body>
     <div class="container">
-      <h1 class="left-title">Insert JSON here</h1>
-      <h1 class="right-title ">Get JSDoc here</h1>
+      <h1 class="header">Recursive JSDoc type generator</h1>
+      <label class="left-title title">Insert JSON here</label>
+      <label class="right-title title">Get JSDoc here</label>
       <div class="textarea-container left">
           <div id="input-textarea" class="json" contenteditable="true">
           </div>
@@ -15,12 +17,20 @@
         <div id="output-textarea"></div>
       </div>
       <div class="left-control">
-        <button id="clear-button" class="button">Clear!</button>
+        <button id="clear-button" class="button">Clear</button>
         <button id="sample-button" class="button">Insert sample</button>
-        <button id="parse-button" class="button main-button">Parse!</button>
+        <button id="parse-button" class="button main-button">Get JSDoc</button>
       </div>
       <div class="right-control">
         <button id="clipboard-button" class="button">Copy to clipboard</button>
+      </div>
+      <div class="bottom">
+        <a class="github-button"
+          href="https://github.com/iozheg/JSDocTypeGenerator"
+          data-size="large"
+          aria-label="See iozheg/JSDocTypeGenerator on GitHub">
+          View on Github
+        </a>
       </div>
     </div>
   </body>
