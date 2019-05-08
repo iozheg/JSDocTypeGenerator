@@ -1,6 +1,7 @@
 # Recursive JSDoc type generator 
 
 Generates JSDoc types from JSON.
+## [DEMO](https://iozheg.github.io/)
 ![sample](sample.png)
 
 ## Getting Started
