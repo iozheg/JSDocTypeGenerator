@@ -1,8 +1,9 @@
 # Recursive JSDoc type generator 
 
-Generates JSDoc types from JSON.
+Generates JSDoc types from JSON. Can generate JSDoc with splitted types or plain.
 ## [DEMO](https://iozheg.github.io/)
 ![sample](sample.png)
+![sample_plain](sample_plain.png)
 
 ## Getting Started
 
@@ -35,7 +36,7 @@ npm run test:c
 ### Unit tests
 
 Unit tests cover only type generation. It's supposed that correct JSON provided to type generator.
-Test JSONs has some complex examples but there can be uncovered cases. See test file and mocks.js for examples.
+Test JSONs has some complex examples but there can be uncovered cases. See test fileы and mocks.js for examples.
 
 ## Deployment
 
@@ -51,11 +52,11 @@ Just make PRs or something like that :)
 
 ## Versioning
 
-No versioning yet. But i think it will be SemVer.
+SemVer.
 
 ## Authors
 
-Alex Netsev
+Aleksandr Netsev
 
 ## License
 

@@ -1,6 +1,6 @@
 {
   "name": "jsdoctypegenerator",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "private": true,
   "scripts": {
@@ -9,8 +9,8 @@
     "test": "jest",
     "test:c": "jest --watch"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Aleksandr Netsev",
+  "license": "MIT",
   "dependencies": {
     "highlight.js": "^9.15.6"
   },
