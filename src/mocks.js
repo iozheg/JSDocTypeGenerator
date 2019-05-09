@@ -71,6 +71,32 @@ const objComplexJSdoc = `/**
  * @property {COMPLEXOBJECT_TYPE} complexObject
  */`;
 
+ const objComplexJSdocUntyped = `/**
+ * @typedef {Object} TYPE
+ * @property {String} string
+ * @property {Number} number
+ * @property {Boolean} boolean
+ * @property {Null} null
+ * @property {Array} emptyArray
+ * @property {Number[]} numberArray
+ * @property {Object[]} emptyObjectArray
+ * @property {Object[]} objectArray
+ * @property {String} objectArray.prop1
+ * @property {Number} objectArray.prop2
+ * @property {Object} objectArray.prop3
+ * @property {String} objectArray.prop3.a
+ * @property {Object} address
+ * @property {String} address.city
+ * @property {String} address.street
+ * @property {Number} address.number
+ * @property {Object} address.status
+ * @property {Boolean} address.status.good
+ * @property {String[]} address.residents
+ * @property {Object} complexObject
+ * @property {Object[]} complexObject.cmpxObjArray
+ * @property {Number[]} complexObject.cmpxObjArray.innerArray
+ */`;
+
  const objPrimitives = {
    string: "string",
    number: 0,
@@ -108,5 +134,6 @@ export {
   objComplex, objComplexJSdoc,
   objPrimitives, objPrimitivesJSdoc,
   objList, objListResult,
-  complexArray, complexArrayResult
+  complexArray, complexArrayResult,
+  objComplexJSdocUntyped
 };

@@ -12,6 +12,7 @@ hljs.initHighlightingOnLoad();
 
 const inputTextArea = document.getElementById("input-textarea");
 const outputArea = document.getElementById("output-textarea");
+const typesCheckbox = document.getElementById("split-types");
 
 function highlightJsdoc(jsdocString) {
   const formattedString = jsdocString
@@ -57,7 +58,7 @@ function parseJson() {
   let result;
   try {
     const inputData = getParsedInput();
-    result = json2jsdoc(inputData);
+    result = json2jsdoc(inputData, typesCheckbox.checked);
   } catch (e) {
     result = e;
   }

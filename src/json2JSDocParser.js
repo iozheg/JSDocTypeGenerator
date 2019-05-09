@@ -14,18 +14,113 @@
  */
 function getPropertyNewType(property) {
   if (property.children.length > 0) {
-    return typeObjectToJSDoc(property);
+    return typeObjectToJsdoc(property);
   }
+}
+
+/**
+ * Converts children properties to JSDoc.
+ * If property has children than handle it as an object.
+ * Else if there is parenName than add it to prop name.
+ *
+ * @param {TYPEOBJECT} typeObject
+ * @param {String} parentName
+ * @returns {String} children JSDoc.
+ */
+function processChildren(typeObject, parentName) {
+  let outputStrings = [];
+  for (const property of typeObject.children) {
+    let newType;
+    if (property.children.length > 0) {
+      newType = typeObjectToPlainJsdoc(property, parentName);
+    } else if (parentName) {
+      property.name = `${parentName}.${property.name}`;
+    }
+    outputStrings.push(createJsdocProperty(property));
+    outputStrings.push(newType);
+  }
+  return outputStrings.join("");
+}
+
+/**
+ * Changes object's name in accordance to parent object.
+ * Returns JSDoc string for children.
+ *
+ * @param {TYPEOBJECT} typeObject
+ * @param {String} parentName
+ * @returns {String} children JSDoc.
+ */
+function typeObjectToPlainJsdoc(typeObject, parentName) {
+  typeObject.name = parentName
+    ? `${parentName}.${typeObject.name}`
+    : typeObject.name;
+  typeObject.type = `Object${typeObject.isArray ? "[]" : ""}`;
+
+  return processChildren(typeObject, typeObject.name);
+}
+
+/**
+ * Creates root typedef for object.
+ *
+ * @param {TYPEOBJECT} typeObject
+ * @returns {String} JSDoc typedef.
+ */
+function createRootTypedef(typeObject) {
+  let brackets = "";
+  if (typeObject.isArray) {
+    brackets = typeObject.type.substring(typeObject.type.indexOf("["));
+  }
+  return `/**\n * @typedef {Object${brackets}} ${typeObject.name}\n`;
+}
+
+/**
+ * Adds root typedef and root's children.
+ *
+ * @param {TYPEOBJECT} typeObject
+ * @returns {String} whole JSDoc string.
+ */
+function rootObjectToJsdoc(typeObject) {
+  let outputStrings = [];
+  outputStrings.push(createRootTypedef(typeObject));
+  outputStrings.push(processChildren(typeObject));
+
+  return outputStrings.join("") + " */";
+}
+
+/**
+ * Starts tree pre-order traversal to build JSDoc string.
+ * tree.children[0] - tree root
+ * Depending on root element type uses different approaches for primitive
+ * types, JS objects and arrays.
+ * If root hasn't children than it has primitive type.
+ *
+ * @param {TYPEOBJECT} tree
+ * @returns {String} whole JSDoc string.
+ */
+function convertToPlainJsdoc(tree) {
+  let output = "";
+  if (tree.children[0].children.length > 0) {
+    output += rootObjectToJsdoc(
+      tree.children[0], tree.children[0].isArray
+    );
+  } else {
+    output += `/** @typedef {${tree.children[0].type}} ${
+      tree.children[0].name} */`;
+  }
+  return output;
 }
 
 /**
  * Creates JSDoc 'property' string.
  *
  * @param {TYPEOBJECT} property
+ * @param {String} parentName parent name that should be added to prop
+ * name.
  * @returns JSDoc string.
  */
-function createJsdocProperty(property) {
-  return ` * @property {${property.type}} ${property.name}\n`;
+function createJsdocProperty(property, parentName) {
+  return ` * @property {${property.type}} ${
+    parentName ? parentName + "." : ""}${property.name}\n`;
 }
 
 /**
@@ -59,7 +154,7 @@ function createJsdocArrayTypedef(type, name) {
  * @param {boolean} [rootIsArray=false]
  * @returns {String} JSDoc string.
  */
-function typeObjectToJSDoc(typeObject, rootIsArray = false) {
+function typeObjectToJsdoc(typeObject, rootIsArray = false) {
   let outputStrings = [];
   let newTypes = [];
   for (const property of typeObject.children) {
@@ -76,7 +171,7 @@ function typeObjectToJSDoc(typeObject, rootIsArray = false) {
 }
 
 /**
- * Starts tree traversal to build JSDoc string.
+ * Starts tree post-order traversal to build JSDoc string.
  * tree.children[0] - tree root
  * Depending on root element type uses different approaches for primitive
  * types, JS objects and arrays.
@@ -85,16 +180,19 @@ function typeObjectToJSDoc(typeObject, rootIsArray = false) {
  * @param {TYPEOBJECT} tree
  * @returns {String} whole JSDoc string.
  */
-function treeToJsdoc(tree) {
+function convertToTypedJsdoc(tree) {
   let output = "";
   if (tree.children[0].children.length > 0) {
-    output += typeObjectToJSDoc(tree.children[0], tree.children[0].isArray);
+    output += typeObjectToJsdoc(
+      tree.children[0], tree.children[0].isArray
+    );
   } else {
     output += `/** @typedef {${tree.children[0].type}} ${
       tree.children[0].name} */`;
   }
   return output;
 }
+
 
 /**
  * Returns value's type.
@@ -198,7 +296,16 @@ function parseData(data, name) {
   return newNode;
 }
 
-export default function json2jsdoc(inputData) {
+/**
+ * Returns JSDoc for whole object.
+ *
+ * @export
+ * @param {*} inputData
+ * @param {boolean} [splitToTypes=true] create JSDoc with splitted types
+ * or not.
+ * @returns
+ */
+export default function json2jsdoc(inputData, splitToTypes = true) {
   /** @type {{name: string, type: string, children: array}} */
   const treeOfTypes = {
     name: "root",
@@ -206,6 +313,8 @@ export default function json2jsdoc(inputData) {
     children: []
   }
   treeOfTypes.children.push(parseData(inputData));
-  const result = treeToJsdoc(treeOfTypes);
+  const result = splitToTypes
+    ? convertToTypedJsdoc(treeOfTypes)
+    : convertToPlainJsdoc(treeOfTypes);
   return result.trim();
 }

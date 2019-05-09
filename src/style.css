@@ -9,7 +9,7 @@ html, body {
 .container {
   display: grid;
   grid-template-columns: [left] 1fr [right] 1fr;
-  grid-template-rows: 85px 40px 450px 40px auto;
+  grid-template-rows: 85px 40px 450px auto auto;
   grid-template-areas:
     "header header"
     "left-title right-title"
@@ -96,7 +96,6 @@ html, body {
   border: 1px solid lightgray;
   border-radius: 3px;
   margin: 0 5px;
-  /* align-self: center; */
   background-color: white;
   font-size: 16px;
 }
@@ -106,6 +105,21 @@ html, body {
 }
 .button:active {
   background-color: #d4d4d4;
+}
+.next-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 5px 0;
+  margin: 0 5px;
+}
+.next-row > input {
+  margin: 2px 3px;
+  height: 15px;
+  width: 15px;
+  cursor: pointer;
+}
+.next-row > label {
+  cursor: pointer;
 }
 
 
